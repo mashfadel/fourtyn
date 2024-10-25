@@ -1,6 +1,6 @@
 'use client';  // Add this at the top of the file
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, BarChart2, PieChart, Settings, ChevronDown, Plus, CreditCard, Bell, LogOut, Sparkles } from "lucide-react"
 import Link from 'next/link'
 import {
@@ -22,6 +22,30 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+
+// Add this hook at the top of the file, outside of the component
+function useWindowSize() {
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  });
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+    
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return windowSize;
+}
 
 // Menu items
 const items = [
@@ -58,6 +82,7 @@ function stringToColor(str: string): string {
 }
 
 export function AppSidebar() {
+  const { width } = useWindowSize();
   const companyName = "Acme Inc";
   const userName = "mohamed";
   const userEmail = "m@example.com";
@@ -67,6 +92,20 @@ export function AppSidebar() {
 
   const companyColor = stringToColor(companyName);
   const userColor = stringToColor(userName);
+
+  const isMobile = width < 640; // Adjust this breakpoint as needed
+
+  const dropdownStyles = isMobile ? {
+    className: "w-[calc(100vw-2rem)] max-w-[20rem]",
+    align: "center" as const,
+    side: "bottom" as const,
+    sideOffset: 0
+  } : {
+    className: "w-64",
+    align: "end" as const,
+    side: "right" as const,
+    sideOffset: 5
+  };
 
   return (
     <Sidebar className="w-60 border-r">
@@ -87,7 +126,7 @@ export function AppSidebar() {
               <ChevronDown className="h-4 w-4 text-gray-500" />
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64" align="end" side="right" sideOffset={5}>
+          <DropdownMenuContent {...dropdownStyles}>
             <DropdownMenuItem className="font-medium px-2 py-2">Teams</DropdownMenuItem>
             {teams.map((team) => (
               <DropdownMenuItem key={team.id} className="px-2 py-2">
@@ -141,7 +180,7 @@ export function AppSidebar() {
               <ChevronDown className="h-4 w-4 text-gray-500" />
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64" align="end" side="right" sideOffset={5}>
+          <DropdownMenuContent {...dropdownStyles}>
             <div className="flex items-center space-x-2 p-2">
               <div className="h-12 w-12 rounded flex items-center justify-center text-white text-lg font-medium" style={{ backgroundColor: userColor }}>
                 {userInitials}
