@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
+"use client"
+
 import localFont from "next/font/local";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import dynamic from 'next/dynamic'
 import "./globals.css";
+import { CommandMenu } from '@/components/command-menu'
+import { useEffect } from 'react'
 
 const AppSidebar = dynamic(() => import('@/components/app-sidebar').then(mod => mod.AppSidebar), { ssr: false })
 
@@ -17,16 +20,26 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata: Metadata = {
-  title: "Acme Inc",
-  description: "Your finance brain",
-};
-
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault()
+        // TODO: Implement opening the command menu
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   return (
     <html lang="en">
       <body
@@ -36,12 +49,13 @@ export default function RootLayout({
           style={{
             "--sidebar-width": "240px",
             "--sidebar-width-mobile": "280px",
-          }}
+          } as React.CSSProperties}
         >
           <div className="flex h-screen">
             <AppSidebar />
             <main className="flex-1 overflow-auto">
               <SidebarTrigger />
+              <CommandMenu />
               {children}
             </main>
           </div>
